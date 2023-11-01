@@ -28,7 +28,7 @@ class AddAsset extends Component {
 
     // Perform an AJAX request to add a new asset
     // You can use fetch or a library like Axios
-    fetch('/add_asset', {
+    fetch('http://127.0.0.1:5000/add_asset', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
