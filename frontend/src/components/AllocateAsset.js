@@ -5,7 +5,8 @@ class AllocateAsset extends Component {
     super(props);
     this.state = {
       assetId: '',
-      employeeId: '',
+      employeeName: '',
+      message: '',
     };
   }
 
@@ -13,10 +14,35 @@ class AllocateAsset extends Component {
     this.setState({ [e.target.name]: e.target.value });
   };
 
-  handleSubmit = (e) => {
+  handleSubmit = async (e) => {
     e.preventDefault();
-    // Perform AJAX request to allocate an asset
-    // You can use fetch or a library like Axios
+
+    const allocationData = {
+      Normal_Employee_name: this.state.employeeName,
+    };
+
+    try {
+      const response = await fetch(`http://127.0.0.1:5000/allocate_asset/{asset_id}${this.state.assetId}`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${localStorage.getItem('access_token')}`,
+        },
+        body: JSON.stringify(allocationData),
+      });
+
+      if (response.status === 201) {
+        this.setState({ message: 'Asset allocated to employee successfully' });
+      } else if (response.status === 404) {
+        this.setState({ message: 'Asset or Normal Employee not found' });
+      } else {
+        this.setState({ message: 'Failed to allocate asset' });
+      }
+    } catch (error) {
+      console.error('Error allocating asset:', error);
+      // Handle the error, e.g., show an error message to the user
+      this.setState({ message: 'An error occurred during asset allocation' });
+    }
   };
 
   render() {
@@ -33,12 +59,13 @@ class AllocateAsset extends Component {
           />
           <input
             type="text"
-            name="employeeId"
-            placeholder="Employee ID"
-            value={this.state.employeeId}
+            name="employeeName"
+            placeholder="Employee Name"
+            value={this.state.employeeName}
             onChange={this.handleInputChange}
           />
           <button type="submit">Allocate Asset</button>
+          {this.state.message && <p>{this.state.message}</p>}
         </form>
       </div>
     );

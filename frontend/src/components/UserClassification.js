@@ -1,46 +1,30 @@
-import React, { Component } from 'react';
-import { Link } from 'react-router-dom';
+import React, { useState } from 'react';
 
-class UserClassification extends Component {
-  constructor(props) {
-    super(props);
-    this.state = {
-      classification: 'Unknown',
-    };
-  }
+function UserClassification() {
+  const [userType, setUserType] = useState(''); // Assuming you want to manage user classification
 
-  componentDidMount() {
-    // Perform an AJAX request to get user classification
-    // You can use fetch or a library like Axios
-    fetch('/classify', {
-      method: 'GET',
-      headers: {
-        'Authorization': `Bearer ${localStorage.getItem('access_token')}`,
-      },
-    })
-      .then((response) => response.json())
-      .then((data) => {
-        if (data.classification) {
-          this.setState({ classification: data.classification });
-        }
-      })
-      .catch((error) => {
-        console.error('Error getting user classification:', error);
-        // Handle the error, e.g., show an error message to the user
-      });
-  }
+  const handleClassificationChange = (event) => {
+    setUserType(event.target.value);
+  };
 
-  render() {
-    return (
+  return (
+    <div>
+      <h2>User Classification</h2>
+      <form>
+        <div>
+          <label htmlFor="userType">User Type:</label>
+          <select id="userType" value={userType} onChange={handleClassificationChange}>
+            <option value="admin">Admin</option>
+            <option value="employee">Employee</option>
+            <option value="manager">Manager</option>
+          </select>
+        </div>
+      </form>
       <div>
-        <h1>User Classification</h1>
-        <p>Your user classification is: {this.state.classification}</p>
-        <p>
-          <Link to="/">Go back to the home page</Link>
-        </p>
+        <p>User is classified as: {userType}</p>
       </div>
-    );
-  }
+    </div>
+  );
 }
 
 export default UserClassification;

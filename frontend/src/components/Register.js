@@ -1,115 +1,87 @@
-import React, { Component } from 'react';
-import { Link, Redirect } from 'react-router-dom';
+import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 
-class Register extends Component {
-  constructor(props) {
-    super(props);
-    this.state = {
-      username: '',
-      password: '',
-      email: '',
-      role: 'Normal User', // Default role
-      success: false,
-      error: null,
-    };
-  }
+function Register() {
+  const [formData, setFormData] = useState({
+    username: '',
+    password: '',
+    email: '',
+    role: 'user',
+  });
 
-  handleInputChange = (e) => {
-    this.setState({ [e.target.name]: e.target.value });
+  const navigate = useNavigate();
+
+  const handleInputChange = (e) => {
+    const { name, value } = e.target;
+    setFormData({
+      ...formData,
+      [name]: value,
+    });
   };
 
-  handleRegister = async (e) => {
-    e.preventDefault();
-
-    const { username, password, email, role } = this.state;
-
+  const registerUser = async (data) => {
     try {
-      const response = await fetch('/register', {
+      const response = await fetch('http://127.0.0.1:5000/register', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ username, password, email, role }),
+        body: JSON.stringify(data),
       });
 
       if (response.status === 201) {
-        // Registration successful
-        this.setState({ success: true });
+        navigate('/'); // Navigate to the home page after successful registration
       } else {
-        const data = await response.json();
-        this.setState({ error: data.message });
+        // Handle the registration error
+        console.error('Registration failed');
       }
     } catch (error) {
-      console.error('Error during registration:', error);
-      this.setState({ error: 'An error occurred during registration' });
+      console.error('Error registering:', error);
+      // Handle the error
     }
   };
 
-  render() {
-    if (this.state.success) {
-      // Registration was successful, redirect to a success page or login
-      return <Redirect to="/login" />;
-    }
+  const handleSubmit = (e) => {
+    e.preventDefault();
+    registerUser(formData);
+  };
 
-    return (
-      <div>
-        <h1>Register</h1>
-        <form onSubmit={this.handleRegister}>
-          <div>
-            <label htmlFor="username">Username</label>
-            <input
-              type="text"
-              id="username"
-              name="username"
-              value={this.state.username}
-              onChange={this.handleInputChange}
-              required
-            />
-          </div>
-          <div>
-            <label htmlFor="password">Password</label>
-            <input
-              type="password"
-              id="password"
-              name="password"
-              value={this.state.password}
-              onChange={this.handleInputChange}
-              required
-            />
-          </div>
-          <div>
-            <label htmlFor="email">Email</label>
-            <input
-              type="email"
-              id="email"
-              name="email"
-              value={this.state.email}
-              onChange={this.handleInputChange}
-              required
-            />
-          </div>
-          <div>
-            <label htmlFor="role">Role</label>
-            <select
-              id="role"
-              name="role"
-              value={this.state.role}
-              onChange={this.handleInputChange}
-            >
-              <option value="Normal User">Normal User</option>
-              <option value="Procurement Manager">Procurement Manager</option>
-              <option value="Admin">Admin</option>
-            </select>
-          </div>
-          <button type="submit">Register</button>
-        </form>
-        {this.state.error && <p className="error">{this.state.error}</p>}
-        <p>
-          Already have an account? <Link to="/login">Login here</Link>
-        </p>
-      </div>
-    );
-  }
+  return (
+    <div>
+      <h1>Register</h1>
+      <form onSubmit={handleSubmit}>
+        <input
+          type="text"
+          name="username"
+          placeholder="Username"
+          value={formData.username}
+          onChange={handleInputChange}
+        />
+        <input
+          type="password"
+          name="password"
+          placeholder="Password"
+          value={formData.password}
+          onChange={handleInputChange}
+        />
+        <input
+          type="text"
+          name="email"
+          placeholder="Email"
+          value={formData.email}
+          onChange={handleInputChange}
+        />
+        <input
+          type="text"
+          name="role"
+          placeholder="Role"
+          value={formData.role}
+          onChange={handleInputChange}
+        />
+        <button type="submit">Register</button>
+      </form>
+    </div>
+  );
 }
 
 export default Register;

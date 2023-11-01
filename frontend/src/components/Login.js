@@ -1,96 +1,76 @@
-import React, { Component } from 'react';
-import { Link, Redirect } from 'react-router-dom';
+import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { ToastContainer, toast } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
 
-class Login extends Component {
-  constructor(props) {
-    super(props);
-    this.state = {
-      username: '',
-      password: '',
-      error: null,
-      loggedIn: false,
-    };
-  }
+function Login() {
+  const [formData, setFormData] = useState({
+    username: '',
+    password: '',
+  });
 
-  handleInputChange = (e) => {
-    this.setState({ [e.target.name]: e.target.value });
+  const navigate = useNavigate();
+
+  const handleInputChange = (e) => {
+    const { name, value } = e.target;
+    setFormData({
+      ...formData,
+      [name]: value,
+    });
   };
 
-  handleLogin = async (e) => {
-    e.preventDefault();
-
-    const { username, password } = this.state;
-
+  const loginUser = async (data) => {
     try {
-      const response = await fetch('/login', {
+      const response = await fetch('http://127.0.0.1:5000/login', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ username, password }),
+        body: JSON.stringify(data),
       });
 
       if (response.status === 200) {
-        // Successful login, extract the access token from the response
-        const data = await response.json();
-        const access_token = data.access_token;
-
-        // Store the access token in local storage or a secure location
-        localStorage.setItem('access_token', access_token);
-
-        // Redirect the user to the desired page upon successful login
-        this.setState({ loggedIn: true });
+        const result = await response.json();
+        localStorage.setItem('access_token', result.access_token);
+        toast.success('Login successful'); // Show success notification
+        navigate('/');
       } else {
-        // Authentication failed, display an error message
-        this.setState({ error: 'Invalid username or password' });
+        toast.error('Invalid username or password'); // Show error notification
       }
     } catch (error) {
-      console.error('Error during login:', error);
-      this.setState({ error: 'An error occurred during login' });
+      console.error('Error logging in:', error);
+      toast.error('An error occurred during login'); // Show error notification
     }
   };
 
-  render() {
-    if (this.state.loggedIn) {
-      // Redirect the user to the desired page upon successful login
-      return <Redirect to="/dashboard" />;
-    }
+  const handleLogin = (e) => {
+    e.preventDefault();
+    loginUser(formData);
+  };
 
-    return (
-      <div>
-        <h1>Login</h1>
-        <form onSubmit={this.handleLogin}>
-          <div>
-            <label htmlFor="username">Username</label>
-            <input
-              type="text"
-              id="username"
-              name="username"
-              value={this.state.username}
-              onChange={this.handleInputChange}
-              required
-            />
-          </div>
-          <div>
-            <label htmlFor="password">Password</label>
-            <input
-              type="password"
-              id="password"
-              name="password"
-              value={this.state.password}
-              onChange={this.handleInputChange}
-              required
-            />
-          </div>
-          <button type="submit">Login</button>
-        </form>
-        {this.state.error && <p className="error">{this.state.error}</p>}
-        <p>
-          Don't have an account? <Link to="/register">Register here</Link>
-        </p>
-      </div>
-    );
-  }
+  return (
+    <div>
+      <h1>Login</h1>
+      <form onSubmit={handleLogin}>
+        <input
+          type="text"
+          name="username"
+          placeholder="Username"
+          value={formData.username}
+          onChange={handleInputChange}
+        />
+        <input
+          type="password"
+          name="password"
+          placeholder="Password"
+          value={formData.password}
+          onChange={handleInputChange}
+        />
+        <button type="submit">Login</button>
+      </form>
+      <ToastContainer /> {/* This component renders the notifications */}
+    </div>
+  );
 }
 
 export default Login;
